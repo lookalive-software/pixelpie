@@ -1,29 +1,14 @@
-# pixelpie
+# neopixelpie
 2D Graphics Framework for RP2040 powered NeoPixel Matrix
 
-A virtual framebuffer approach to managing sprites on a 2D grid consisting of a single NeoPixel strip.
+A virtual framebuffer approach to managing sprites on a 2D grid consisting of a single NeoPixel strip:
 
-The only primative here is a "Sprite" class, which is specified as a 2D array of None and True (monochrome sprites only for now)
+An instance of the Matrix class contains a buffer property and a pixels property, both the same dimension. The pixels matrix represents the state of the neopixel strip and each element contains an RGB color tuple defaulting to blank. The pixels matrix should never be accessed directly, instead matrix.setPixel(x, y, Color) is used to write to the physical neopixel strip and update the internal state. The buffer property represents the placement of sprites in the 2D space, each element is either empty or contains a reference to a sprite object.
 
-Sprites can have their position and color (and pixels) updated any number of times before writing these changes to the display.
+The sprite class consists of a bitmap property (a 2D array of True and None), and an X/Y origin which provides an offset to the coordinates of the bitmap. When applying the bitmap to the virtual buffer, the coordinates to be modified are determined by summing the origin with each X/Y coordinate of the bitmap. If the bitmap contains None, the buffer isn't modified. If the bitmap contains True, a reference to the sprite is written to that coordinate of the virtual buffer.
 
-Matrix has a Sprite constructor as a method so that the Sprite instance can have a reference to the matrix it belonds to. All modifications to the Sprite are passed onto the virtual buffer, and can then be applied to the output device by calling matrix.show() 
+Anytime a sprite is moved or rotated, it first looks at the pixels it's moving INTO to check if it will be blocked by a boundary of another sprite. For this to be true, every pixel (in the buffer) about to be occupied by the updated sprite must contain either None or a reference to itself. If any other sprite appears in a pixel, the modification is ignored and that modify function returns false. If the modification is allowed, first the old pixels are set to None and then the new pixels are set to reference self.
 
-Both the virtual buffer and the physical buffer can be 'queried' by the usual 2D array syntax, so matrix.virtual[0][0] and matrix.physical[0][0] return the virtual and physical "state" of the pixel at coordinate 0,0. 
+Once sprites are in place and all modifications have been made, a matrix.show() method performs a diff between the buffer matrix and the pixels matrix, skipping any elements that don't require modification.
 
-The virtual and physical buffers start out as grids of empty pixels. 
-
-When a sprite is added to the matrix, the pixels it occupies are set to object references back to the sprite. In this way, the program may check "what sprite occupies this space", enabling collision detection or various behavoir when overlapping.
-
-TODO: instead of an object reference to a single sprite in each pixel, each pixel can be a Set of sprites occupying that space, allowing for overlap, transparency, color mixing etc.  
-
-```
-from NeoPixelPie import Matrix
-
-matrix = Matrix(13, 13, zigzag=True) # optionally specify bg-color and fg-color, defaults to blank and white.
-
-square = matrix.Sprite(pixels, origin=(x,y), color=(255, 0, 0))
-
-
-
-matrix.show() # compares physical buffer (representing the old state) with virtual buffer (representing the new state)
+Both the virtual buffer and the state of the pixels can be 'queried' by the usual 2D array syntax, so matrix.buffer[0][0] and matrix.pixels[0][0] return the virtual and physical "state" of the pixel at coordinate 0,0. The type returns by buffer is None or Sprite (obj ref). The type returned by pixels is always a Color.
