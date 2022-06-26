@@ -171,8 +171,9 @@ class Sprite(object):
             for x in range(width):
                 if self.getBit(x, y):
                     self.matrix.buffer[y+self.offsetY][x+self.offsetX] = self
-                else:
-                    self.matrix.buffer[y+self.offsetY][x+self.offsetX] = None
+                # I actually don't want to overwrite pixels that I don't occupy.
+                # else:
+                #     self.matrix.buffer[y+self.offsetY][x+self.offsetX] = None
 
         self.matrix.show()
 
