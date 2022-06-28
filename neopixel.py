@@ -3,19 +3,18 @@
 
 from collections import namedtuple
 import plasma
-
+from machine import Timer
 
 ColorRGB = namedtuple('ColorRGB', 'r g b')
 
 # an out of bounds exception is thrown when proposed coordinates overflow the dimensions of self.matrix
 # the exception should contain an xy tuple of how far and in what direction the overflow occurred
+
 class OutOfBounds(Exception):
-    def __init__(self, xy):
-        self.xy = xy # (x, y) tuple
+    pass
 
 class SpriteCollision(Exception):
-    def __init__(self, sprite):
-        self.sprite = sprite
+    pass
 
 class Sprite(object):
     """
@@ -37,7 +36,8 @@ class Sprite(object):
     If the modification is allowed, first the old pixels are set to None and then the new pixels are set to reference self.
 
     """
-    def __init__(self, matrix, bitmap, origin, colorIndex):
+    def __init__(self, matrix, bitmap=[[True]], origin=(0,0), colorIndex=1):
+        
         self.matrix = matrix
         self.bitmap = bitmap
         self.colorIndex = colorIndex # monochrome only to start, later the bitmap will consist of references to color objects
@@ -45,6 +45,15 @@ class Sprite(object):
         self.offsetY = origin[1]
         self.spin = 0
 
+        self.show()
+    
+    def setOrigin(self, x, y):
+        """
+        Sets the origin of the sprite to the given x and y coordinates.
+        """
+        self.hide()
+        self.offsetX = x
+        self.offsetY = y
         self.show()
 
     def getShape(self):
@@ -107,7 +116,7 @@ class Sprite(object):
                         self.offsetX -= tx
                         self.offsetY -= ty
                         self.show()
-                        raise SpriteCollision(self.matrix.buffer[y+self.offsetY][x+self.offsetX])
+                        raise SpriteCollision(self.matrix.buffer[y+self.offsetY+ty][x+self.offsetX+tx])
 
         # if we haven't returned yet, no collision was found, so the new coordinates are accepted
         self.show()
@@ -229,13 +238,6 @@ class Matrix():
     def setForeground(self, color):
         self.palette[1] = color
         self.show()
-
-    def addSprite(self, bitmap=[[True]], origin=(0,0), colorIndex=1):
-        """
-        Creates a new sprite, passing on a reference to this matrix, plus the bitmap, origin and colorindex
-        """
-        return Sprite(self, bitmap, origin, colorIndex)
-        
 
     def setPixel(self, x, y, color):
         """

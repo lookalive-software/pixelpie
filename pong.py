@@ -22,7 +22,7 @@ controller = nunchuk.Nunchuk(I2C(
 
 player = Sprite(board, paddlebitmap, (0,6))
 computer = Sprite(board, paddlebitmap, (12,6))
-ball = Ball(board, ballbitmap, (6,6), (random.choice([-6,6]),random.randint(-5,5)), 1)
+ball = Ball(board, ballbitmap, (6,6), (random.choice([-6,6]),0), 1)
 
 # given a samplerate and an acceleration value,
 # set a timer to check the state of the nunchuk
