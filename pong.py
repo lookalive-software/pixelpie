@@ -22,7 +22,7 @@ controller = nunchuk.Nunchuk(I2C(
 
 player = Sprite(board, paddlebitmap, (0,6))
 computer = Sprite(board, paddlebitmap, (12,6))
-ball = Ball(board, ballbitmap, (6,6), (random.choice([-6,6]),0), 1)
+ball = Ball(board, ballbitmap, (6,6), 1)
 
 # given a samplerate and an acceleration value,
 # set a timer to check the state of the nunchuk
@@ -44,7 +44,8 @@ def refresh(t):
         player.translate(0,1)
 
     # AI will track the ball one pixel at a time, only when the ball is moving towards the computer
-    if(ball.vx > 0):
+    # use randint to decide if the computer gets to keep up with the ball, adjust the skill of the computer
+    if(ball.vx > 0 and random.randint(0,100) < 20):
         if(ball.offsetY <= computer.offsetY):
             computer.translate(0,-1)
         elif(ball.offsetY >= (computer.offsetY + 4)):

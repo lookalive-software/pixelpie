@@ -2,12 +2,14 @@ from neopixel import OutOfBounds, Sprite, SpriteCollision
 from machine import Timer
 import random
 import json
+from math import copysign, ceil
 
 # load numbers from json file
 numbers = json.load(open("numbers4x6.json"))
-maxYmag = 8
-minYmag = 1
-magStep = 2
+maxYmag = 10
+minYmag = 2
+magStep = 3
+minXmag = 3
 
 
 # should have an overflow value and a number of digits
@@ -27,7 +29,7 @@ class Number(Sprite):
         self.setValue((self.value + 1) % self.overflow)
 
 class Ball(Sprite):
-    def __init__(self, matrix, bitmap, origin, velocity, colorIndex):
+    def __init__(self, matrix, bitmap, origin, colorIndex):
         super().__init__(matrix, bitmap, origin, colorIndex)
 
         # self.score = {
@@ -37,10 +39,11 @@ class Ball(Sprite):
         # }
 
         # self.hideScore()
-
+        self.vx = 0
+        self.vy = 0
         self.xtimer = Timer()
         self.ytimer = Timer()
-        self.setVelocity(velocity)
+        self.setVelocity(random.choice([-minXmag,minXmag]), random.randint(-minYmag,minYmag))
     
     def hideScore():
         self.score["player"].hide()
@@ -58,29 +61,32 @@ class Ball(Sprite):
     # if velocity is 0, no timer is necessary, call deinit
     # a velocity of 1 is minimum, let's say 500 milliseconds
     # so a velocity of 500 would be to update in 1 millisecond
-    def setVelocity(self, velocity):
+    def setVelocity(self, newX, newY):
+        newX = ceil(newX)
+        newY = ceil(newY)
+        # if the old velocity was 0, we need to set up a timer
+        print("newX: " + str(newX) + " newY: " + str(newY))
 
-        (self.vx, self.vy) = velocity
-
-        if(self.vx == 0):
+        if(self.vx != 0 and newX == 0):
             self.xtimer.deinit()
-        elif(abs(self.vx) > 500):
-            raise ValueError("vx must be between -500 and 500")
-        else:
-            self.xtimer.init(period=abs(500//self.vx), mode=Timer.ONE_SHOT, callback=self.updateX)
-        
-        # same for y
-        if(self.vy == 0):
+            print("deinit X timer")
+        elif(self.vx == 0 and newX != 0):
+            self.xtimer.init(period=abs(500//newX), mode=Timer.ONE_SHOT, callback=self.updateX)
+            print("start X timer")
+
+        if(self.vy != 0 and newY == 0):
             self.ytimer.deinit()
-        elif(abs(self.vy) > 500):
-            raise ValueError("vy must be between -500 and 500")
-        else:
-            self.ytimer.init(period=abs(500//self.vy), mode=Timer.ONE_SHOT, callback=self.updateY)
+            print("deinit Y timer")
+        elif(self.vy == 0 and newY != 0):
+            self.ytimer.init(period=abs(500//newY), mode=Timer.ONE_SHOT, callback=self.updateY)
+            print("start Y timer")
+        
+        self.vx = newX
+        self.vy = newY
 
     def updateX(self, oldTimer):
         try:
             self.translate(1, 0) if self.vx > 0 else self.translate(-1, 0)
-            oldTimer.init(period=abs(500//self.vx), mode=Timer.ONE_SHOT, callback=self.updateX)
 
         except OutOfBounds as OOB:
             # if we reach out of bounds on an x update, someone wins a point
@@ -98,7 +104,7 @@ class Ball(Sprite):
             # reset the ball
             self.setOrigin(6,6)
             # randomly choose a new velocity between -5 and 5 both directions
-            self.setVelocity((random.choice([-3,3]), random.randint(-5,5)))
+            self.setVelocity(random.choice([-minXmag,minXmag]), random.choice([-minYmag,minYmag]))
             
         except SpriteCollision as sprite:
 
@@ -110,25 +116,30 @@ class Ball(Sprite):
             # in all cases I want to reverse the X directino of the ball, but I want to recalculate Y based on the distance
             # if the distance is less than 1, we collided dead center, zero out my Y velocity
             if(hit < 1):
-                self.vy = max(self.vy // magStep, minYmag)
+                self.setVelocity(-self.vx, copysign(max(abs(self.vy) // magStep, minYmag), self.vy))
             # if the distance is less than 2, we collided closer to the edge, don't change Y velocity
             # if distance is greater than 2, then the ball collided just on the edge, let's double Y velocity
-            elif(hit > 2):
-                self.vy = min(self.vy * magStep, maxYmag)
+            else:
+                self.setVelocity(-self.vx, copysign(min(abs(self.vy) * magStep, maxYmag), self.vy))
 
             # if we collide with a sprite while updating x, just bounce back
-            self.vx = -self.vx
             self.updateX(oldTimer)
+        finally:
+            oldTimer.init(period=abs(500//self.vx), mode=Timer.ONE_SHOT, callback=self.updateX)
+
 
     def updateY(self, oldTimer):
         try:
             self.translate(0, 1) if self.vy > 0 else self.translate(0, -1)
-            oldTimer.init(period=abs(500//self.vy), mode=Timer.ONE_SHOT, callback=self.updateY)
         except OutOfBounds as OOB:
             # when moving in the y direction, we can only bounce off the top or bottom
-            self.vy = -self.vy
+            self.setVelocity(self.vx, -self.vy)
             self.updateY(oldTimer)
         except SpriteCollision:
             # if we collide with a sprite while updating y, ignore it, wait til next update
-            self.vy = 0
             pass
+        except ZeroDivisionError:
+            pass
+        finally:
+            if self.vy != 0:
+                oldTimer.init(period=abs(500//self.vy), mode=Timer.ONE_SHOT, callback=self.updateY)
