@@ -31,6 +31,16 @@ class Nunchuk(object):
         self.i2c.writeto(self.address, b'\xfb\x00')
         utime.sleep_ms(100)
 
+    def __str__(self):
+        self.update()
+        C, Z = self.buttons()
+        X, Y = self.joystick()
+
+        return f'''
+        Buttons: {("C" if C else "")} {("Z" if Z else "")}
+        Joystick X: {X} Y: {Y}
+        '''
+
 
     def update(self):
         """Requests a sensor readout from the controller and receives the
