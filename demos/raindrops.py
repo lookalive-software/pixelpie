@@ -1,17 +1,13 @@
 from machine import I2C, Pin, Timer
-from pixelpie import Matrix, OutOfBounds, Sprite, SpriteCollision
+from pixelpie import Matrix, OutOfBounds, Sprite, SpriteCollision, ColorRGB
 import time, random
 from math import pi, sin
-from collections import namedtuple
-
-ColorRGB = namedtuple('ColorRGB', 'r g b')
-
 
 m = Matrix(11,11)
 drop_start_times = [random.random() for _ in range(11)]  # Random start times for each column
 
 def delta(timerInstance):
-    t = time.ticks_ms() / 189
+    t = time.ticks_ms() / 2189
 
     for y in range(11):
         for x in range(11):

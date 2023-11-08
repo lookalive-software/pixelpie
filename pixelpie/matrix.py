@@ -1,5 +1,5 @@
 import plasma
-from pixelpie import ColorRGB, Palette
+from .color import ColorRGB, Palette
 
 colors = Palette()
 

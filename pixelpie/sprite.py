@@ -81,11 +81,12 @@ class Sprite(object):
         if self.spin == 0:
             return self.bitmap[y][x]
         elif self.spin == 1:
-            return self.bitmap[width-x-1][y]
+            return self.bitmap[x][height-y-1]
         elif self.spin == 2:
             return self.bitmap[height-y-1][width-x-1]
         elif self.spin == 3:
-            return self.bitmap[x][height-y-1]
+            return self.bitmap[width-x-1][y]
+
 
     def translate(self, tx, ty):
         """
