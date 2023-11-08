@@ -1,11 +1,11 @@
-from neopixel import OutOfBounds, Sprite, SpriteCollision
+from pixelpie import OutOfBounds, Sprite, SpriteCollision
 from machine import Timer
 import random
 import json
 from math import copysign, ceil
 
 # load numbers from json file
-numbers = json.load(open("numbers4x6.json"))
+numbers = json.load(open("../bitmaps/numbers4x6.json"))
 maxYmag = 10
 minYmag = 2
 magStep = 3

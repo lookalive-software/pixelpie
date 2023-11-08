@@ -1,0 +1,59 @@
+
+# functional colors
+Could be that the palette is allowed to be a mix of ColorRGB tuples and (x,y,t) => (r,g,b) functions that are called within the setPixel function,
+so instead of setting the pixel a static color, a dynamic color is calculated on the fly
+Allowing for a color in the "palette" to be a fade or blink effect...
+
+# Matrix configuration
+It would be nice if I could set what corner is "upperleft" and/or to mirror the matrix.
+
+# clock demo
+Should be a function to call that can set the clock automatically if plugged into computer
+
+# Demo / Attraction Mode
+Utilize the built in buttons and joystick to make a clock mode that lets you set the numbers and then have it auto-advance
+A automata mode, that resets on button press
+Tetris/Pong mode, maybe each button press advances / resets. Tetris would be an interesting self-play to write. Choose offset and orientation that doesn't block any lower layers, completes row if possible, basically optimal move without screwing yourself
+
+
+# Support Torus-Mode
+I think I had a nice demo of a sprite being allowed to wrap around the screen, pacman style
+But then I added Sprite Collisions
+At least, a getPixel method which returns the state of this.pixels[y][x] with the understanding that I may want to rollover
+So, I think its a property of the matrix to allow overflow to wrap around, and to handle origins that are out of bounds.
+Simple mod by self.shape.width|height
+
+This will also involve abstracting the rotate and translate boundary testing...
+matrix.buffer might have to be 3 dimensional, to allow stacking, each sprite having a certain layer its on
+and collissions will only be checked against the current z-index
+
+
+# Support HSV
+ColorRGB = namedtuple('ColorRGB', 'r g b')
+ColorHSV = namedtuple('ColorHSV', 'h s v')
+
+It would be great to select a subset of pixels, a subregion maybe given with an origin and a bitmap, 
+and apply a change, a mask over those pixels, such as, increase brightness, set brightness to some value etc
+
+The palette could support either RGB and HSV, and its just a matter of, when grabbed the tuple from the palette, 
+Using set_rgb or set_hsv depending on the instance type
+if isinstance(pixel, ColorHSV): set_hsv
+elif isinstance(pixel, ColorRGB): set_rgb
+else: (pixel is set to None? should be an error, pixel must have a value, default to palette[0]
+
+So, well given a palette of colors, that doesn't bode well for me modifying the pixels directly
+
+Ok so the palette is really for Sprites, which really should just have a reference to their own color
+I think the palette thing was, when scanning the table, I could check if the new color was same as the old color
+With an object comparison instead of a deepEqual comparison, so the pixel values were always pointing to an object in the palette
+
+So when manipulating the color values of the pixels table, I can read and write to the color.
+When I'm manipulating sprites, I can just check what sprite is occupying a space, and from that reference get its shape, origin, etc
+
+As is, sprites are not allowed to overlap, only one sprite can occupy each cell of the matrix
+
+# Layers
+In a future version, the sprite will track its own mask of colors of a given shape and origin
+And the pixel update function will just have to take a list of sprite layers and sum them up, combining colors as necessary
+So if two sprites were of some opacity, the colors would mix when overlapping, that could be nice
+Or at least, background objects that you don't collide with and background objects you do. 

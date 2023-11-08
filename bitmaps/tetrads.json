@@ -1,0 +1,29 @@
+{
+    "I": [
+        [true, true, true, true]
+    ],
+    "J": [
+        [true, null, null],
+        [true, true, true]
+    ],
+    "L": [
+        [null, null, true],
+        [true, true, true]
+    ],
+    "O": [
+        [true, true],
+        [true, true]
+    ],
+    "S": [
+        [null, true, true],
+        [true, true, null]
+    ],
+    "T": [
+        [null, true, null],
+        [true, true, true]
+    ],
+    "Z": [
+        [true, true, null],
+        [null, true, true]
+    ]
+}

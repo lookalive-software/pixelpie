@@ -1,5 +1,4 @@
 import machine
-import time
 import utime
 
 class Nunchuk(object):
@@ -23,9 +22,7 @@ class Nunchuk(object):
         self.i2c = i2c
         self.address = 0x52
         self.buffer = bytearray(b'\x00\x00\x00\x00\x00\x00')
-        # There are two initialization sequences documented.
-        #self.i2c.writeto(self.address, b'\x40\x00')
-        #self.i2c.writeto(self.address, b'\x00')
+ 
         self.i2c.writeto(self.address, b'\xf0\x55')
         utime.sleep_ms(100)
         self.i2c.writeto(self.address, b'\xfb\x00')
@@ -40,7 +37,6 @@ class Nunchuk(object):
         Buttons: {("C" if C else "")} {("Z" if Z else "")}
         Joystick X: {X} Y: {Y}
         '''
-
 
     def update(self):
         """Requests a sensor readout from the controller and receives the

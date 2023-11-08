@@ -1,17 +1,19 @@
-from neopixel import Matrix, ColorRGB, Sprite
+from pixelpie import Matrix, ColorRGB, Sprite, Palette
 import machine
 from collections import namedtuple
 import json
 import time
 
-num = json.load(open("numbers4x6.json"))
+colors = Palette()
+
+num = json.load(open("../bitmap/numbers4x6.json"))
 
 # rtc = machine.RTC()
 # # (year, month, day, weekday, hours, minutes, seconds, subseconds)
 # rtc.datetime((2022, 6, 17, 4, 17, 32, 46, 0))
 
-m = Matrix(13,13)
-m.setForeground(ColorRGB(100,50,120))
+
+m = Matrix(11, 11)
 
 four = m.addSprite(num["4"], (0, 0))
 
